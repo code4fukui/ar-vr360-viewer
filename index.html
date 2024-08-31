@@ -1,0 +1,57 @@
+<!DOCTYPE html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><link rel="icon" href="data:">
+<script type="module">
+import { THREE, scene, camera, renderer } from "https://code4fukui.github.io/egxr.js/egxr.js";
+import { createSpherePhoto } from "./createSpherePhoto.js";
+
+const defimg = "https://img.fukuno.com/vr180/20240819_jigintern/R0030142.JPG";
+
+const imgs = (location.hash.substring(1) || defimg).split(",");
+
+const objs = [];
+
+const r = imgs.length == 1 ? 0 : 1.5;
+const spherer = imgs.length == 1 ? 1.3 : 0.7;
+for (let i = 0; i < imgs.length; i++) {
+  const sphere = createSpherePhoto(imgs[i], spherer);
+  scene.add(sphere);
+  sphere.idx = i;
+
+  sphere.tick = (t) => {
+    const th = Math.PI * 2 / imgs.length * sphere.idx + t / 20;
+    const x = Math.cos(th) * r;
+    const z = Math.sin(th) * r;
+
+    sphere.position.x = x;
+    sphere.position.z = z - 1;
+    //sphere.position.y = 1.2;
+    sphere.position.y = 0.5;
+    sphere.rotation.y = th;
+  };
+  objs.push(sphere);
+}
+
+renderer.setAnimationLoop(() => {
+  const t = performance.now() / 1000;
+  objs.forEach(o => o.tick(t));
+	renderer.render(scene, camera);
+});
+
+document.body.onkeydown = (e) => {
+  const d = .01;
+  if (e.key == "ArrowRight") {
+    //camera.position.x += d;
+    camera.rotation.y -= d;
+  } else if (e.key == "ArrowLeft") {
+    //camera.position.x -= d;
+    camera.rotation.y += d;
+  } else if (e.key == "ArrowUp") {
+    camera.position.z -= d;
+  } else if (e.key == "ArrowDown") {
+    camera.position.z += d;
+  }
+};
+document.body.onmousewheel = (e) => {
+  camera.position.z += e.deltaY / 30;
+};
+
+</script>
